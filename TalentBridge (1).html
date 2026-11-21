@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TalentBridge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&display=swap">
+<style>
+:root{color-scheme:light dark;--bg:#eef2f7;--card:#fff;--tx:#14202e;--mu:#5d6b7c;--ac:#2457d6;--acs:#e4ebfb;--ok:#0f8a5f;--oks:#dff3ea;--bd:#d8dfe9;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1620;--card:#18212d;--tx:#e8edf4;--mu:#97a4b5;--ac:#7ea2ff;--acs:#22304d;--ok:#4cd39a;--oks:#173a2e;--bd:#2a3646;--bad:#ff8a78}}
+:root[data-theme="dark"]{--bg:#0f1620;--card:#18212d;--tx:#e8edf4;--mu:#97a4b5;--ac:#7ea2ff;--acs:#22304d;--ok:#4cd39a;--oks:#173a2e;--bd:#2a3646;--bad:#ff8a78}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 "Schibsted Grotesk",system-ui,sans-serif}
+.w{max-width:920px;margin:0 auto;padding:16px}
+h1,h2,h3{line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}h1{font-size:2.1rem}h2{font-size:1.3rem}h3{font-size:1.05rem}
+.mu{color:var(--mu)}.sm{font-size:.85rem}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:16px}
+.logo{font-weight:700;font-size:1.15rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:12px}
+.grid{display:grid;gap:12px;grid-template-columns:1fr 1fr}@media(max-width:640px){.grid{grid-template-columns:1fr}}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit;margin:4px 0 10px}
+label{font-size:.85rem;font-weight:500}
+button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 14px;border-radius:8px;cursor:pointer;min-height:40px}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+:root[data-theme="dark"] button.p{color:#0f1620}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button.p{color:#0f1620}}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}.tabs button.on{background:var(--acs);border-color:var(--ac);font-weight:700}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;background:var(--bg);border:1px solid var(--bd);font-size:.8rem;margin:2px 4px 2px 0}
+.tag.hit{background:var(--oks);border-color:var(--ok);color:var(--ok)}
+.chip{padding:5px 11px;min-height:0;border-radius:99px;margin:0 6px 6px 0;font-size:.85rem}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.m{min-width:64px;text-align:center}.m b{font-size:1.5rem;display:block;line-height:1}
+.bar{height:6px;border-radius:9px;background:var(--bd);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ok)}
+.st{font-size:.8rem;padding:2px 9px;border-radius:99px;background:var(--acs)}.st.shortlisted{background:var(--oks);color:var(--ok)}.st.rejected{color:var(--bad)}
+.err{color:var(--bad);font-size:.9rem;margin:0 0 8px}.ok{color:var(--ok);font-size:.9rem}
+.hero{padding:24px 0 12px}.portal{cursor:pointer;text-align:left;width:100%;padding:18px;display:block;border-radius:12px}
+.portal h2{margin-bottom:4px}
+</style></head><body><div class="w" id="app"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hash=s=>{let h=5381;for(const c of s)h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36)};
+const KEY='tb_v2';
+const uid=()=>Math.random().toString(36).slice(2,9);
+const parse=s=>[...new Set(String(s).split(',').map(x=>x.trim().toLowerCase()).filter(Boolean))];
+function seed(){
+  const pw=hash('demo123');
+  const S=[['s1','Maya Chen','Frontend developer','react,javascript,css,typescript,figma','Four years building design-system-driven web apps.'],
+   ['s2','Omar Haddad','Full-stack engineer','node,react,sql,aws,typescript','Shipped payments and onboarding flows at two startups.'],
+   ['s3','Priya Nair','Data analyst','python,sql,tableau,statistics','Turns messy operational data into weekly decisions.'],
+   ['s4','Lucas Moreau','Product designer','figma,research,css,prototyping','Designs end-to-end, from interviews to handoff.'],
+   ['s5','Aisha Bello','Backend developer','python,sql,aws,docker,node','Focused on reliable APIs and observability.']];
+  const db={users:[{id:'h1',role:'hr',name:'Dana (HR)',email:'hr@demo.com',pw},{id:'u1',role:'student',name:'Demo Student',email:'student@demo.com',pw}],profiles:{},jobs:[],apps:[]};
+  const C=['IIT Delhi','BITS Pilani','Delhi University','NID Ahmedabad','NIT Trichy'],D=['B.Tech, Computer Science','B.Tech, Information Technology','B.Sc, Statistics','B.Des, Communication Design','B.Tech, Computer Science'];
+  S.forEach((p,i)=>{db.users.push({id:p[0],role:'student',name:p[1],email:p[0]+'@demo.com',pw});db.profiles[p[0]]={name:p[1],college:C[i],degree:D[i],year:2025+i%3,skills:parse(p[3]),bio:p[4]}});
+  db.jobs=[{id:'j1',hr:'h1',title:'Frontend Engineer',company:'Northwind',desc:'Own our customer web app.',skills:['react','typescript','css','javascript'],stipend:'$1,500 / month'},
+   {id:'j2',hr:'h1',title:'Data Engineer',company:'Northwind',desc:'Build reliable data pipelines.',skills:['python','sql','aws'],stipend:'$1,200 / month'},
+   {id:'j3',hr:'h1',title:'Product Designer',company:'Northwind',desc:'Shape new hiring tools.',skills:['figma','research','prototyping'],stipend:'$1,000 / month'}];
+  [['s1','j1'],['s2','j1'],['s4','j1'],['s3','j2'],['s5','j2'],['s2','j2'],['s4','j3']].forEach((a,i)=>db.apps.push({id:'a'+i,student:a[0],job:a[1],status:'applied',at:Date.now()-i*864e5}));
+  return db;
+}
+let db;try{db=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!db||!db.users)db=seed();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}};
+let me=null;try{me=JSON.parse(sessionStorage.getItem(KEY+'s'))}catch(e){}
+const setMe=u=>{me=u?u.id:null;try{sessionStorage.setItem(KEY+'s',JSON.stringify(me))}catch(e){}};
+const user=()=>db.users.find(u=>u.id===me);
+const ui={portal:null,mode:'login',tab:null,job:null,sel:[],min:0,err:'',note:''};
+const score=(p,j)=>{if(!p||!j.skills.length)return 0;return Math.round(100*j.skills.filter(s=>p.skills.includes(s)).length/j.skills.length)};
+const tags=(arr,hit)=>arr.map(s=>`<span class="tag ${hit&&hit.includes(s)?'hit':''}">${esc(s)}</span>`).join('');
+
+function route(){const h=location.hash.slice(1);ui.portal=h==='student'||h==='hr'?h:null;render()}
+addEventListener('hashchange',()=>{ui.err='';route()});
+
+function render(){
+  const u=user();let h='';
+  if(!u)h=ui.portal?authView():homeView();
+  else h=head(u)+(u.role==='hr'?hrView(u):stuView(u));
+  $('#app').innerHTML=h;
+  if(u&&u.role==='hr')drawDash();
+}
+function head(u){return `<header><span class="logo">TalentBridge</span><span class="sm mu">${esc(u.name)} · ${u.role==='hr'?'HR portal':'Student portal'} <button data-a="out">Sign out</button></span></header>`}
+function homeView(){return `<div class="hero"><h1>Hire for skills, not keywords.</h1><p class="mu">Choose your portal to sign in or create an account.</p></div>
+<div class="grid"><button class="portal card" data-a="go" data-v="student"><h2>I am a student</h2><span class="mu">Build a skills profile and apply to roles.</span></button>
+<button class="portal card" data-a="go" data-v="hr"><h2>I am hiring</h2><span class="mu">Post jobs and filter applicants by skill match.</span></button></div>
+<p class="sm mu">Demo logins: student@demo.com or hr@demo.com, password demo123.</p>`}
+function authView(){const hr=ui.portal==='hr',su=ui.mode==='signup';
+  return `<header><span class="logo">TalentBridge</span><button data-a="home">Back</button></header>
+<div class="card" style="max-width:420px;margin:auto"><h2>${hr?'HR portal':'Student portal'}</h2><p class="mu sm">${su?'Create your account.':'Sign in to continue.'}</p>
+<form data-f="auth">${su?'<label>Full name</label><input name="name" required autocomplete="name">':''}
+<label>Email</label><input name="email" type="email" required autocomplete="email" value="${su?'':hr?'hr@demo.com':'student@demo.com'}">
+<label>Password</label><input name="pw" type="password" required minlength="6" autocomplete="current-password" value="${su?'':'demo123'}">
+${ui.err?`<p class="err">${esc(ui.err)}</p>`:''}<button class="p" style="width:100%">${su?'Create account':'Sign in'}</button></form>
+<p class="sm mu" style="margin:12px 0 0">${su?'Have an account?':'New here?'} <button data-a="mode" style="min-height:0;padding:2px 8px">${su?'Sign in':'Create account'}</button></p></div>`}
+
+function stuView(u){const p=db.profiles[u.id];ui.tab=!p?'prof':(ui.tab||'jobs');
+  const tabs=[['jobs','Jobs'],['mine','My applications'],['prof','My profile']];
+  let b='';
+  if(ui.tab==='prof'){b=`<div class="card"><h2>${p?'Your profile':'Set up your profile'}</h2>${p?'':'<p class="mu sm">Tell employers about yourself. Open jobs appear as soon as you save.</p>'}<form data-f="prof"><label>Full name</label><input name="name" required value="${esc(p?p.name:u.name)}">
+<label>College name</label><input name="college" required value="${esc(p?p.college:'')}">
+<div class="grid"><div><label>Degree / branch</label><input name="degree" required placeholder="B.Tech, Computer Science" value="${esc(p?p.degree:'')}"></div>
+<div><label>Graduation year</label><input name="year" type="number" min="2000" max="2040" required value="${esc(p?p.year:'')}"></div></div>
+<label>Skills (comma separated)</label><input name="skills" required placeholder="react, sql, figma" value="${esc(p?p.skills.join(', '):'')}">
+<label>About you</label><textarea name="bio" rows="3">${esc(p?p.bio:'')}</textarea>
+${ui.note?`<p class="ok">${esc(ui.note)}</p>`:''}<button class="p">Save profile</button></form></div>`}
+  else if(ui.tab==='mine'){const a=db.apps.filter(x=>x.student===u.id);
+    b=a.length?a.map(x=>{const j=db.jobs.find(j=>j.id===x.job);return j?`<div class="card row"><div><h3>${esc(j.title)}</h3><span class="mu sm">${esc(j.company)}</span></div><span class="st ${x.status}">${x.status}</span></div>`:''}).join(''):'<div class="card mu">No applications yet. Browse jobs and apply.</div>'}
+  else{b=(p?'':'<div class="card"><b>Complete your profile first.</b> <span class="mu">Add your skills to see match scores and apply.</span></div>')+
+    (db.jobs.length?db.jobs.map(j=>{const sc=score(p,j),ap=db.apps.some(x=>x.student===u.id&&x.job===j.id);
+      return `<div class="card"><div class="row"><div><h3>${esc(j.title)}</h3><span class="mu sm">${esc(j.company)}${j.stipend?' · Stipend: '+esc(j.stipend):''}</span></div><div class="m"><b>${sc}%</b><span class="sm mu">match</span></div></div>
+<p>${esc(j.desc)}</p><div>${tags(j.skills,p?p.skills:[])}</div><p style="margin:10px 0 0"><button class="p" data-a="apply" data-id="${j.id}" ${ap||!p?'disabled':''}>${ap?'Applied':'Apply'}</button></p></div>`}).join(''):'<div class="card mu">No open roles yet.</div>');}
+  return (p?nav(tabs):'')+b}
+function nav(t){return `<div class="tabs">${t.map(x=>`<button class="${ui.tab===x[0]?'on':''}" data-a="tab" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>`}
+
+function hrView(u){const n=ui.note;ui.note='';return `<div class="card"><h2>Post a job</h2><form data-f="job"><div class="grid"><div><label>Job title</label><input name="title" required></div><div><label>Company name</label><input name="company" required></div></div>
+<label>Role description</label><textarea name="desc" rows="3" required></textarea>
+<div class="grid"><div><label>Required skills (comma separated)</label><input name="skills" required placeholder="react, sql"></div><div><label>Stipend</label><input name="stipend" required placeholder="e.g. $1,500 / month"></div></div>
+${n?`<p class="ok">${esc(n)}</p>`:''}<button class="p">Publish job</button></form></div><div id="dash"></div>`}
+const myJobs=()=>db.jobs.filter(j=>j.hr===me);
+function jobApps(){const ids=ui.job==='all'?myJobs().map(j=>j.id):[ui.job];
+  return db.apps.filter(a=>ids.includes(a.job)).map(a=>{const j=db.jobs.find(j=>j.id===a.job),p=db.profiles[a.student];return{a,j,p,sc:score(p,j)}}).filter(x=>x.p&&x.j)}
+function drawDash(){const el=$('#dash');if(!el)return;const mine=myJobs();
+  if(!mine.length){el.innerHTML='<div class="card mu">Post your first job above. Applicants will appear here as soon as students apply.</div>';return}
+  if(!ui.job||(ui.job!=='all'&&!mine.find(j=>j.id===ui.job)))ui.job='all';
+  const skills=[...new Set(jobApps().flatMap(x=>x.p.skills))].sort();
+  el.innerHTML=`<div class="card"><h2>Applicants</h2><label>Job</label><select data-a="job"><option value="all">All my jobs</option>${mine.map(j=>`<option value="${j.id}" ${j.id===ui.job?'selected':''}>${esc(j.title)} (${db.apps.filter(a=>a.job===j.id).length})</option>`).join('')}</select>
+<label>Filter by skills (${ui.sel.length?'must have all selected':'none selected'})</label><div>${skills.map(s=>`<button class="chip ${ui.sel.includes(s)?'on':''}" data-a="chip" data-v="${esc(s)}">${esc(s)}</button>`).join('')||'<span class="mu sm">No applicants yet.</span>'}</div>
+<label>Minimum match: <b id="minv">${ui.min}%</b></label><input type="range" min="0" max="100" step="10" value="${ui.min}" data-a="min"></div><div id="cands"></div>
+<div class="card"><h3>Your postings</h3>${mine.map(j=>`<div class="row" style="margin:8px 0"><span>${esc(j.title)} <span class="mu sm">${esc(j.stipend||'')}</span></span><span class="sm mu">${db.apps.filter(a=>a.job===j.id).length} applied <button data-a="del" data-id="${j.id}">Delete</button></span></div>`).join('')}</div>`;
+  drawList()}
+function drawList(){const r=jobApps().filter(x=>x.sc>=ui.min&&ui.sel.every(s=>x.p.skills.includes(s))).sort((a,b)=>b.sc-a.sc);
+  $('#cands').innerHTML=`<p class="sm mu">${r.length} applicant${r.length===1?'':'s'}, best match first</p>`+(r.length?r.map(x=>`<div class="card"><div class="row"><div><h3>${esc(x.p.name)}</h3><span class="mu sm">${esc(x.p.degree)}, ${esc(x.p.college)} (${esc(x.p.year)})</span><br><span class="sm">Applied for ${esc(x.j.title)}</span></div>
+<div class="m"><b>${x.sc}%</b><span class="sm mu">match</span><div class="bar"><i style="width:${x.sc}%"></i></div></div></div>
+<p class="sm">${esc(x.p.bio)}</p><div>${tags(x.p.skills,x.j.skills)}</div>
+<p style="margin:10px 0 0"><span class="st ${x.a.status}">${x.a.status}</span> <button data-a="stat" data-id="${x.a.id}" data-v="shortlisted">Shortlist</button> <button data-a="stat" data-id="${x.a.id}" data-v="rejected">Reject</button></p></div>`).join(''):'<div class="card mu">No applicants match. Clear a skill filter, lower the minimum match, or wait for new applications.</div>')}
+addEventListener('storage',e=>{if(e.key!==KEY)return;let n;try{n=JSON.parse(e.newValue)}catch(x){}if(!n)return;db=n;const u=user();if(!u)return;if(u.role==='hr')drawDash();else if(ui.tab==='jobs')render()});
+
+document.addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(!t||t.tagName==='SELECT'||t.tagName==='INPUT')return;const a=t.dataset.a,v=t.dataset.v,id=t.dataset.id;
+  if(a==='go'){location.hash=v;ui.mode='login'}
+  else if(a==='home'){history.pushState('',document.title,location.pathname);ui.portal=null;ui.err='';render()}
+  else if(a==='mode'){ui.mode=ui.mode==='login'?'signup':'login';ui.err='';render()}
+  else if(a==='out'){setMe(null);ui.tab=null;ui.job=null;ui.sel=[];render()}
+  else if(a==='tab'){ui.tab=v;ui.note='';render()}
+  else if(a==='apply'){db.apps.push({id:uid(),student:me,job:id,status:'applied',at:Date.now()});save();render()}
+  else if(a==='del'){db.jobs=db.jobs.filter(j=>j.id!==id);db.apps=db.apps.filter(x=>x.job!==id);save();render()}
+  else if(a==='chip'){ui.sel=ui.sel.includes(v)?ui.sel.filter(s=>s!==v):[...ui.sel,v];drawDash()}
+  else if(a==='stat'){const x=db.apps.find(x=>x.id===id);x.status=x.status===v?'applied':v;save();drawList()}
+});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.a==='min'){ui.min=+t.value;$('#minv').textContent=ui.min+'%';drawList()}});
+document.addEventListener('change',e=>{if(e.target.dataset.a==='job'){ui.job=e.target.value;ui.sel=[];drawDash()}});
+document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.dataset.f,d=Object.fromEntries(new FormData(e.target));
+  if(f==='auth'){const role=ui.portal,em=d.email.trim().toLowerCase();
+    if(ui.mode==='signup'){if(db.users.some(u=>u.email===em)){ui.err='That email is already registered. Sign in instead.';return render()}
+      const u={id:uid(),role,name:d.name.trim(),email:em,pw:hash(d.pw)};db.users.push(u);save();setMe(u);ui.tab=role==='student'?'prof':null}
+    else{const u=db.users.find(u=>u.email===em&&u.pw===hash(d.pw));
+      if(!u){ui.err='Email or password is incorrect.';return render()}
+      if(u.role!==role){ui.err='This account belongs to the '+(u.role==='hr'?'HR':'student')+' portal.';return render()}
+      setMe(u);ui.tab=null}
+    ui.err='';render()}
+  else if(f==='prof'){db.profiles[me]={name:d.name.trim(),college:d.college.trim(),degree:d.degree.trim(),year:d.year,skills:parse(d.skills),bio:d.bio.trim()};save();ui.tab='jobs';render()}
+  else if(f==='job'){db.jobs.push({id:uid(),hr:me,title:d.title.trim(),company:d.company.trim(),desc:d.desc.trim(),skills:parse(d.skills),stipend:d.stipend.trim()});save();ui.note='Job published. Students can see it now.';render()}
+});
+route();
+</script></body></html>
